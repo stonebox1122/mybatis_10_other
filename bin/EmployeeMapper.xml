@@ -7,8 +7,12 @@ id：唯一标识，指定为接口的方法名称
 resultType：返回值类型
 #{id}：从传递过来的参数中取出id值
  -->	
+	<resultMap type="com.stone.mybatis.bean.Employee" id="MyEmp">
+		<id column="id" property="id"/>
+		<result column="empStatus" property="empStatus" typeHandler="com.stone.mybatis.typehandler.MyEnumEmpStatusTypeHandler"/>
+	</resultMap>
 	<select id="getEmpById" resultType="com.stone.mybatis.bean.Employee">
-		select id,last_name lastName,gender,email from tbl_employee where id = #{id}
+		select id,last_name lastName,gender,email,empStatus from tbl_employee where id = #{id}
 	</select>
 	
 	<!-- public List<Employee> getEmps(); -->
@@ -17,9 +21,35 @@ resultType：返回值类型
 	</select>
 	
 	<!-- public Long addEmp(Employee employee); -->
-	<insert id="addEmp">
-		insert into tbl_employee(last_name,gender,email)
-		values(#{lastName},#{gender},#{email})
+	<insert id="addEmp" useGeneratedKeys="true" keyProperty="id">
+		insert into tbl_employee(last_name,gender,email,empStatus)
+		values(#{lastName},#{gender},#{email},#{empStatus})
 	</insert>
+	
+	<!-- public void getPageByProcedure(); -->
+	<!-- 
+		使用select标签定义调用存储过程 
+		statementType="CALLABLE"：表示要调用存储过程
+	-->
+	<select id="getPageByProcedure" statementType="CALLABLE" databaseId="oracle">
+		{call hello_test(
+			#{start,mode=IN,jdbcType=INTEGER},
+			#{end,mode=IN,jdbcType=INTEGER},
+			#{count,mode=OUT,jdbcType=INTEGER},
+			#{emps,mode=OUT,jdbcType=CURSOR,javaType=ResultSet,resultMap=PageEmp}
+			)}
+	</select>
+	<resultMap type="com.stone.mybatis.bean.Employee" id="PageEmp">
+		<id column="empno" property="id"/>
+		<result column="ename" property="lastName"/>
+		<result column="gender" property="gender"/>
+		<result column="email" property="email"/>
+		<result column="deptno" property="deptno"/>
+	</resultMap>
+	
+	<!-- public List<Employee> getEmps(); -->
+	<select id="getEmps" resultMap="PageEmp" databaseId="oracle">
+		select empno,ename,gender,email from emp
+	</select>
 	
 </mapper>

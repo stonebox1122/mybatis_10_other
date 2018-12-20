@@ -15,7 +15,9 @@ import org.junit.Test;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.stone.mybatis.bean.EmpStatus;
 import com.stone.mybatis.bean.Employee;
+import com.stone.mybatis.bean.OraclePage;
 import com.stone.mybatis.dao.EmployeeMapper;
 
 /**
@@ -73,9 +75,10 @@ public class MybatisTest {
 		// 3、获取接口的实现类对象，会为接口自动创建一个代理对象，代理对象去执行增删改查方法
 		try {
 			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
-			Employee employee = mapper.getEmpById(1);
-			System.out.println(mapper.getClass());
-			System.out.println(employee);
+			List<Employee> emps = mapper.getEmps();
+			for (Employee employee : emps) {
+				System.out.println(employee);
+			}
 		} finally {
 			openSession.close();
 		}
@@ -127,10 +130,11 @@ public class MybatisTest {
 
 		// 2、获取可以执行批量操作的SqlSession对象
 		SqlSession openSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
+		//SqlSession openSession = sqlSessionFactory.openSession();
 		long start = System.currentTimeMillis();
 		try {
 			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 10; i++) {
 				mapper.addEmp(new Employee(UUID.randomUUID().toString().substring(0, 5), "b", "1"));
 			}
 			openSession.commit();
@@ -143,5 +147,58 @@ public class MybatisTest {
 			openSession.close();
 		}
 	}
+	
+	/**
+	 * 存储过程来实现Oracle分页
+	 * @throws IOException 
+	 */
+	@Test
+	public void testProcedure() throws IOException {
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+		SqlSession openSession = sqlSessionFactory.openSession();
+		try {
+			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
+			OraclePage page = new OraclePage();
+			page.setStart(1);
+			page.setEnd(5);
+			mapper.getPageByProcedure(page);
+			System.out.println("总记录数：" + page.getCount());
+			System.out.println("查出的数据数：" + page.getEmps().size());
+			System.out.println("查出的数据：" + page.getEmps());
+		} finally {
+			openSession.close();
+		}
+	}
+	
+	@Test
+	public void testEnumUse() {
+		EmpStatus login = EmpStatus.LOGIN;
+		System.out.println("枚举的索引：" + login.ordinal());
+		System.out.println("枚举的名字：" + login.name());
+		
+		System.out.println("枚举的状态码：" + login.getCode());
+		System.out.println("枚举的提示信息：" + login.getMsg());
+	}
+	
+	/**
+	 * MyBatis在处理枚举对象的时候默认保存的是枚举的名字，使用EnumTypeHandler
+	 * 改变使用：EnumOrdinalTypeHandler，插入枚举的索引值
+	 * @throws IOException
+	 */
+	@Test
+	public void testEnum() throws IOException {
+		SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
+		SqlSession openSession = sqlSessionFactory.openSession();
+		try {
+			EmployeeMapper mapper = openSession.getMapper(EmployeeMapper.class);
+			Employee employee = new Employee("test_enum", "enum@stone.com", "1");
+			mapper.addEmp(employee);
+			System.out.println("保存成功" + employee.getId());
+			openSession.commit();
+		} finally {
+			openSession.close();
+		}
+	}
+	
 
 }

@@ -19,5 +19,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="D:/software/ssm/project-lib/jar/jsqlparser-1.3.jar"/>
 	<classpathentry kind="lib" path="D:/software/ssm/project-lib/jar/pagehelper-5.1.8.jar" sourcepath="D:/software/ssm/project-lib/pagehelper-5.1.8-sources.jar"/>
+	<classpathentry kind="lib" path="D:/software/ssm/project-lib/jar/ojdbc6_g.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

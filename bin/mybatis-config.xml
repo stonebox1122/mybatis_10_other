@@ -4,21 +4,68 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
 	
+	<properties resource="db.properties"></properties>
+	
+	<!-- 声明使用EnumOrdinalTypeHandler来处理枚举类，插入到数据库中的是枚举的索引值 -->
+	<typeHandlers>
+		<!-- 1、配置自定义的TypeHandler -->
+		<typeHandler handler="com.stone.mybatis.typehandler.MyEnumEmpStatusTypeHandler" javaType="com.stone.mybatis.bean.EmpStatus"/>
+		<!-- 
+			2、也可以在处理某个字段的时候告诉MyBatis用什么类型的TypeHandler
+				保存：#{empStatus,typeHandler=xxx} 
+				查询：<resultMap type="com.stone.mybatis.bean.Employee" id="MyEmp">
+						<id column="id" property="id"/>
+						<result column="empStatus" property="empStatus" typeHandler="com.stone.mybatis.typehandler.MyEnumEmpStatusTypeHandler"/>
+					</resultMap>
+				注意：如果在参数位置修改TypeHandler，应该保证保存数据和查询数据用的TypeHandler是一样的
+		-->
+		
+	</typeHandlers>
+	
 	<plugins>
 		<plugin interceptor="com.github.pagehelper.PageInterceptor"></plugin>
 	</plugins>
 	
-	<environments default="development">
-		<environment id="development">
+	<!-- 4、environments：可以配置多种环境，default指定使用某种环境，可以达到快速切换 -->
+	<environments default="mysql">
+		<!-- 
+			environment：配置一个具体的环境 ，id表示当前环境的唯一标识
+			必须有以下两个标签：
+			transactionManager：事物管理器，
+				type：指定事物管理器类型：JDBC(JdbcTransactionFactory)|MANAGED(ManagedTransactionFactory)
+				自定义事物管理器：使用TransactionFactory接口，type指定全类名
+				一般交给Spring来进行事务管理
+			dataSource：数据源；
+				type：数据源类型：UNPOOLED|POOLED|JNDI
+				自定义数据源：实现DataSourceFactory接口，type是全类名
+		-->
+		<environment id="oracle">
 			<transactionManager type="JDBC" />
 			<dataSource type="POOLED">
-				<property name="driver" value="com.mysql.jdbc.Driver" />
-				<property name="url" value="jdbc:mysql://172.30.60.14:3306/mybatis" />
-				<property name="username" value="stest1" />
-				<property name="password" value="P@ssw0rd1" />
+				<property name="driver" value="${oracle.driverClass}" />
+				<property name="url" value="${oracle.jdbcUrl}" />
+				<property name="username" value="${oracle.username}" />
+				<property name="password" value="${oracle.password}" />
+			</dataSource>
+		</environment>
+		
+		<environment id="mysql">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver" value="${mysql.driverClass}" />
+				<property name="url" value="${mysql.jdbcUrl}" />
+				<property name="username" value="${mysql.username}" />
+				<property name="password" value="${mysql.password}" />
 			</dataSource>
 		</environment>
 	</environments>
+	
+	<databaseIdProvider type="DB_VENDOR">
+		<!-- 为不同的数据库厂商起别名 -->
+		<property name="MySQL" value="mysql"/>
+		<property name="Oracle" value="oracle"/>
+		<property name="SQL Server" value="sqlserver"/>
+	</databaseIdProvider>
 	
 	<!-- 写好的SQL映射文件EmployeeMapper.xml一定要注册到全局配置文件中mybatis-config.xml" -->
 	<mappers>

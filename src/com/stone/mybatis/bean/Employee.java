@@ -5,6 +5,9 @@ public class Employee {
 	private String lastName;
 	private String email;
 	private String gender;
+	private String deptno;
+	//员工状态
+	private EmpStatus empStatus = EmpStatus.LOGOUT;
 	public Employee() {
 		super();
 	}
@@ -37,6 +40,18 @@ public class Employee {
 	}
 	public void setGender(String gender) {
 		this.gender = gender;
+	}
+	public String getDeptno() {
+		return deptno;
+	}
+	public void setDeptno(String deptno) {
+		this.deptno = deptno;
+	}
+	public EmpStatus getEmpStatus() {
+		return empStatus;
+	}
+	public void setEmpStatus(EmpStatus empStatus) {
+		this.empStatus = empStatus;
 	}
 	@Override
 	public String toString() {
